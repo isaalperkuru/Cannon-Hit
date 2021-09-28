@@ -19,9 +19,15 @@ public class ShootScript : MonoBehaviour
     public GameObject ballPrefab;
     public GameObject ballsContainer;
 
+    private GameController gc;
+
+    private void Awake()
+    {
+        gc = GameObject.Find("GameController").GetComponent<GameController>();
+        Dots = GameObject.Find("Dots");
+    }
     void Start()
     {
-        Dots = GameObject.Find("Dots");
         projectilesPath = Dots.transform.Cast<Transform>().ToList().ConvertAll(t => t.gameObject);
         HideDots();
     }
@@ -30,11 +36,11 @@ public class ShootScript : MonoBehaviour
     {
         ballBody = ballPrefab.GetComponent<Rigidbody2D>();
 
-        //if(gc.shotCount <= 3 && !IsMouseOverUI())
-        //{
+        if(gc.shotCount <= 3 /*&& !IsMouseOverUI()*/)
+        {
             Aim();
             Rotate();
-       // }
+        }
     }
 
     void Aim()
@@ -57,8 +63,10 @@ public class ShootScript : MonoBehaviour
         else if(aiming && !shoot)
         {
             aiming = false;
-            HideDots();
-            //shoot
+            HideDots();            
+            StartCoroutine(Shoot());
+            if (gc.shotCount == 1)
+                Camera.main.GetComponent<CameraTransitions>().RotateCameraToSide();
         }
     }
 
@@ -105,5 +113,19 @@ public class ShootScript : MonoBehaviour
         var dir = GameObject.Find("dot (1)").transform.position - transform.position;
         var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+    }
+
+    IEnumerator Shoot()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            yield return new WaitForSeconds(0.07f);
+            GameObject ball = Instantiate(ballPrefab, transform.position, Quaternion.identity);
+            ball.name = "Ball";
+            ball.transform.SetParent(ballsContainer.transform);
+            ballBody = ball.GetComponent<Rigidbody2D>();
+            ballBody.AddForce(ShootForce(Input.mousePosition));
+        }
+        gc.shotCount++;
     }
 }
