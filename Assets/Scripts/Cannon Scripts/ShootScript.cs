@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 public class ShootScript : MonoBehaviour
 {
@@ -36,11 +37,16 @@ public class ShootScript : MonoBehaviour
     {
         ballBody = ballPrefab.GetComponent<Rigidbody2D>();
 
-        if(gc.shotCount <= 3 /*&& !IsMouseOverUI()*/)
+        if(gc.shotCount <= 3 && !IsMouseOverUI())
         {
             Aim();
             Rotate();
         }
+    }
+
+    private bool IsMouseOverUI()
+    {
+        return EventSystem.current.IsPointerOverGameObject();
     }
 
     void Aim()
